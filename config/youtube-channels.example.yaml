@@ -1,0 +1,13 @@
+# YouTube channels to monitor
+# Copy to ~/.claude/config/youtube-channels.yaml and customize
+channels:
+  - id: "UCsBjURrPoezykLs9EqgamOA"
+    name: "Fireship"
+    category: "Dev"
+  # Add more channels:
+  # - id: "UC_CHANNEL_ID"
+  #   name: "Channel Name"
+  #   category: "Category"
+
+defaults:
+  days: 7

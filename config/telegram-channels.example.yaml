@@ -1,0 +1,13 @@
+# Telegram channels to monitor
+# Copy to ~/.claude/config/telegram-channels.yaml and customize
+channels:
+  - name: "@durov"
+    category: "Tech"
+  - name: "@python_digest"
+    category: "Dev"
+  # Add more channels:
+  # - name: "@channel_name"
+  #   category: "Category"
+
+defaults:
+  days: 7
