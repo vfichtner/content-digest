@@ -1,79 +1,93 @@
 ---
 name: content-digest
-description: Monitors Telegram and YouTube channels, creates engagement-weighted German summaries of the last N days
+description: Monitors Telegram and YouTube channels via MCP servers, creates engagement-weighted German summaries of the last N days
 ---
 
-## Parameter
+## Parameters
 
-Parse diese aus dem Aufruf des Users:
-- `days` — Anzahl Tage zurückblicken. Default: 7
-- `source` — `all`, `telegram`, oder `youtube`. Default: `all`
-- `category` — Filter nach Kategorie aus der Config. Default: alle Kategorien
+Parse from the user's invocation:
+- `days` — Number of days to look back. Default: 7
+- `source` — `all`, `telegram`, or `youtube`. Default: `all`
+- `category` — Filter by category from config. Default: all categories
 
-## Anweisungen
+## Prerequisites
 
-Du bist ein Content-Analyst und erstellst einen deutschsprachigen Digest von Telegram- und YouTube-Kanälen.
+This skill requires two MCP servers registered in `~/.claude/.mcp.json`:
+- **telegram** — provides `telegram_list_channels`, `telegram_get_posts`, `telegram_get_comments`
+- **youtube** — provides `get_channel_videos`, `get_video_transcript`, `get_video_comments` and other tools
 
-### Schritt 1: Configs laden
+IMPORTANT: Use ONLY the MCP tools from the registered servers. NEVER use WebFetch, web scraping, or RSS feeds as a fallback. If an MCP server is not connected, report the issue to the user and skip that source.
 
-Lies beide Config-Dateien:
+## Instructions
+
+You are a content analyst producing a German-language digest of Telegram and YouTube channels.
+
+### Step 1: Load configs
+
+Read both config files using the Read tool:
 - `~/.claude/config/telegram-channels.yaml`
 - `~/.claude/config/youtube-channels.yaml`
 
-Falls `source` auf eine Quelle beschränkt ist, überspringe die andere. Falls `category` gesetzt ist, filtere die Kanäle.
+If `source` limits to one source, skip the other. If `category` is set, filter channels accordingly.
 
-### Schritt 2: Telegram-Daten sammeln
+### Step 2: Gather Telegram data
 
-Für jeden Telegram-Kanal in der Config:
-1. Rufe `telegram_get_posts(channel=<name>, days=<days>)` auf
-2. Identifiziere die Top 3 Posts nach engagement_score
-3. Für die Top 3 Posts, rufe `telegram_get_comments(channel=<name>, post_id=<id>)` auf
+IMPORTANT: Use the MCP tools from the `telegram` server. These are available as regular tool calls.
 
-### Schritt 3: YouTube-Daten sammeln
+For each Telegram channel in the config:
+1. Call the MCP tool `telegram_get_posts` with parameters `channel` and `days`
+2. Identify the top 3 posts by `engagement_score`
+3. For the top 3 posts, call the MCP tool `telegram_get_comments` with `channel` and `post_id`
 
-Für jeden YouTube-Kanal in der Config:
-1. Rufe `get_channel_videos(channel_id=<id>)` auf — filtere auf die letzten N Tage
-2. Für die Top 3 Videos nach Views, rufe `get_video_transcript(video_id=<id>)` auf
-3. Für die Top 3 Videos, rufe `get_video_comments(video_id=<id>)` auf
+### Step 3: Gather YouTube data
 
-### Schritt 4: Analysieren & Ranken
+IMPORTANT: Use the MCP tools from the `youtube` server. These are available as regular tool calls.
 
-Ranke allen Content nach Engagement:
-- Telegram: engagement_score aus der API
+For each YouTube channel in the config:
+1. Call the MCP tool `get_channel_videos` with `channel_id` — filter to the last N days
+2. For the top 3 videos by views, call the MCP tool `get_video_transcript` with `video_id`
+3. For the top 3 videos, call the MCP tool `get_video_comments` with `video_id`
+
+If a YouTube MCP tool has a different name, use ToolSearch to discover the available tools.
+
+### Step 4: Analyze & rank
+
+Rank all content by engagement:
+- Telegram: `engagement_score` from the API
 - YouTube: views + likes*5 + comments*3
 
-Identifiziere quellenübergreifende Themen — Themen die sowohl in Telegram ALS AUCH YouTube auftauchen werden höher gewichtet.
+Identify cross-source themes — topics appearing in BOTH Telegram AND YouTube are boosted.
 
-### Schritt 5: Zusammenfassung in der Konversation
+### Step 5: Output summary in conversation
 
-Ausgabe auf Deutsch, folgendes Format:
+Output in German, using this format:
 
 ```
-# Content Digest — KW {woche}/{jahr}
+# Content Digest — KW {week}/{year}
 
 ## Top-Themen dieser Woche
-1. **{Thema}** — {Kurzbeschreibung} (Quellen: {channels})
+1. **{Topic}** — {Short description} (Sources: {channels})
 2. ...
 
 ## Telegram Highlights
 ### {Channel} ({Category})
-- **Top Post** ({views} Views, {reactions} Reactions): {Zusammenfassung}
-  - Diskussion: {Kommentar-Zusammenfassung}
+- **Top Post** ({views} Views, {reactions} Reactions): {Summary}
+  - Diskussion: {Comment summary}
 
 ## YouTube Highlights
 ### {Channel} ({Category})
-- **"{Titel}"** ({views} Views) — Key Points:
-  - {Punkt 1}
-  - {Punkt 2}
-  - Kommentare: {Zusammenfassung}
+- **"{Title}"** ({views} Views) — Key Points:
+  - {Point 1}
+  - {Point 2}
+  - Kommentare: {Comment summary}
 
 ## Stimmungsbild
-{Zusammenfassung der dominanten Narrative, Trends und Stimmungen}
+{Summary of dominant narratives, trends, and sentiment}
 ```
 
-### Schritt 6: Detail-Datei schreiben
+### Step 6: Write detail file
 
-Speichere den vollständigen Digest (alle Posts/Videos, nicht nur Highlights) unter:
+Save the full digest (all posts/videos, not just highlights) to:
 `docs/digests/{YYYY-MM-DD}-content-digest.md`
 
-Verwende das gleiche Format, aber mit ALLEN Posts und Videos.
+Use the same format but include ALL posts and videos.
