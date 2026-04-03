@@ -8,15 +8,22 @@ VENV_DIR="${SCRIPT_DIR}/telegram-mcp/.venv"
 echo "=== Content Digest Skill - Installation ==="
 echo
 
-# 1. Install telegram-mcp
-echo "[1/4] Installing telegram-mcp..."
+# 1. Install skill as global slash command
+echo "[1/5] Installing /content-digest slash command..."
+COMMANDS_DIR="${HOME}/.claude/commands"
+mkdir -p "${COMMANDS_DIR}"
+cp "${SCRIPT_DIR}/skill/content-digest.md" "${COMMANDS_DIR}/content-digest.md"
+echo "  ✓ /content-digest command installed"
+
+# 2. Install telegram-mcp
+echo "[2/5] Installing telegram-mcp..."
 cd "${SCRIPT_DIR}/telegram-mcp"
 python3 -m venv "${VENV_DIR}"
 "${VENV_DIR}/bin/pip" install -e ".[dev]" --quiet
 echo "  ✓ telegram-mcp installed"
 
 # 2. Copy config templates
-echo "[2/4] Setting up config files..."
+echo "[3/5] Setting up config files..."
 mkdir -p "${CONFIG_DIR}"
 
 if [ ! -f "${CONFIG_DIR}/telegram-channels.yaml" ]; then
@@ -34,7 +41,7 @@ else
 fi
 
 # 3. Register MCP server
-echo "[3/4] Registering MCP server..."
+echo "[4/5] Registering MCP server..."
 MCP_CONFIG="${HOME}/.claude/.mcp.json"
 
 if [ -f "${MCP_CONFIG}" ]; then
@@ -79,7 +86,7 @@ with open('${MCP_CONFIG}', 'w') as f:
 fi
 
 # 4. Setup instructions
-echo "[4/4] Remaining manual steps:"
+echo "[5/5] Remaining manual steps:"
 echo
 echo "  a) Get Telegram API credentials from https://my.telegram.org"
 echo "     Add them to ~/.claude/.mcp.json under mcpServers.telegram.env:"
