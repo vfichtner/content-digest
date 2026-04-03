@@ -24,11 +24,45 @@ The install script will:
 
 ### Manual steps after install
 
-1. **Telegram API credentials** from https://my.telegram.org -- set `TELEGRAM_API_ID` and `TELEGRAM_API_HASH` as environment variables
-2. **First-time Telegram auth** -- run the auth command printed by the installer
-3. **YouTube MCP server** -- install separately (e.g. [dannySubsense/youtube-mcp-server](https://github.com/dannySubsense/youtube-mcp-server))
-4. **Edit channel configs** in `~/.claude/config/telegram-channels.yaml` and `youtube-channels.yaml`
-5. **Restart Claude Code** to load the MCP server
+**1. Telegram API credentials**
+
+Get your API ID and Hash from https://my.telegram.org and add them to `~/.claude/.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "telegram": {
+      "env": {
+        "TELEGRAM_API_ID": "your_id",
+        "TELEGRAM_API_HASH": "your_hash"
+      }
+    }
+  }
+}
+```
+
+**2. Telegram authentication**
+
+Run the auth script in a terminal (interactive -- asks for phone number and verification code):
+
+```bash
+cd content-digest/telegram-mcp
+.venv/bin/python scripts/auth.py
+```
+
+The script reads credentials from `~/.claude/.mcp.json` and saves the session to `~/.claude/config/telegram.session`.
+
+**3. YouTube MCP server**
+
+Install a YouTube MCP server separately, e.g. [dannySubsense/youtube-mcp-server](https://github.com/dannySubsense/youtube-mcp-server).
+
+**4. Channel configs**
+
+Edit the channel lists:
+- `~/.claude/config/telegram-channels.yaml`
+- `~/.claude/config/youtube-channels.yaml`
+
+**5. Restart Claude Code** to load the MCP servers.
 
 ## Usage
 
